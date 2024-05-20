@@ -1,5 +1,6 @@
 import { BigNumberish, MimcSponge, buildMimcSponge } from "circomlibjs";
 
+// Wrapper class for working with MimcSponge hash from circomlibjs library
 export class MiMCSponge {
   private mimcSponge!: MimcSponge;
 

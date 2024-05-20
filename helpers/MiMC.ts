@@ -1,6 +1,7 @@
 import { MimcSponge, buildMimcSponge, mimcSpongecontract } from "circomlibjs";
 import { Element } from "fixed-merkle-tree";
 
+// A wrapper class for working with the merkle tree and for unrolling the hasher contract
 export class MiMC {
   private mimcSponge!: MimcSponge;
 
