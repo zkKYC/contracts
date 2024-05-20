@@ -1,1 +1,1 @@
-# contracts
+# zkKYC contracts
