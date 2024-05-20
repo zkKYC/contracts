@@ -13,7 +13,7 @@ describe("zkKYC-SBT-1155", function () {
     const ZkKYC = (await hre.ethers.getContractFactory(
       "zkKYC"
     )) as ZkKYC__factory;
-    const zkKYC = await ZkKYC.deploy();
+    const zkKYC = await ZkKYC.deploy(20, otherAccount);
 
     return { zkKYC, owner, otherAccount };
   }

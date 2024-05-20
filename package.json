@@ -1,7 +1,7 @@
 {
   "name": "hardhat-project",
   "scripts": {
-    "agecompile": "circom circuits/age/age.circom --r1cs --wasm",
+    "agecompile": "circom age.circom --r1cs --wasm",
     "agewtns": "node circuits/age/age_js/generate_witness.js circuits/age/age_js/age.wasm circuits/age/input.json circuits/age/age_js/witness.wtns",
     "agewtns1": "node circuits/age/age_js/generate_witness.js circuits/age/age_js/age.wasm circuits/age/input1.json circuits/age/age_js/witness.wtns"
   },

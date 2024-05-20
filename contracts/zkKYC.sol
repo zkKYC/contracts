@@ -1,24 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {MerkleTreeWithHistory, IHasher} from "./MerkleTreeWithHistory.sol";
 import {Soulbound} from "./sbt/SBT.sol";
 
-contract zkKYC is Soulbound {
+contract zkKYC is Soulbound, MerkleTreeWithHistory {
     struct Passport {
-        bytes32 fullNameHash;
-        bytes32 numberHash;
-        bytes32 genderHash;
-        bytes32 birthDateHash;
-        bytes32 birthPlaceHash;
-        bytes32 otherAttributesHash;
+        uint256 fullNameHash; // no proof
+        uint256 numberHash;
+        uint256 genderHash;
+        uint256 birthTimestampHash;
+        uint256 birthPlaceHash;
     }
 
     struct UserDocuments {
-        bytes32 ssnHash;
+        uint256 ssnHash;
         Passport passport;
-        bytes32 ageHash;
-        bytes32 countryHash;
-        bytes32 regionHash;
+        uint256 ageHash;
+        uint256 countryHash;
+        uint256 regionHash;
+        bool isExist;
     }
 
     mapping(address => UserDocuments) private userDocuments;
@@ -26,28 +27,31 @@ contract zkKYC is Soulbound {
 
     uint256 public globalNonce;
 
-    constructor() Soulbound("zkPass", "ZKP") {}
+    event CreateCommitment(bytes32 indexed commitment, uint32 leafIndex);
+
+    constructor(
+        uint32 _levels,
+        IHasher _hasher
+    ) Soulbound("zkPass", "ZKP") MerkleTreeWithHistory(_levels, _hasher) {}
 
     function setDocuments(
         address user,
-        bytes32 _ssnHash,
-        bytes32 _fullNameHash,
-        bytes32 _numberHash,
-        bytes32 _genderHash,
-        bytes32 _birthDateHash,
-        bytes32 _birthPlaceHash,
-        bytes32 _otherAttributesHash,
-        bytes32 _ageHash,
-        bytes32 _countryHash,
-        bytes32 _regionHash
+        uint256 _fullNameHash,
+        uint256 _numberHash,
+        uint256 _genderHash,
+        uint256 _birthTimestampHash,
+        uint256 _birthPlaceHash,
+        uint256 _ssnHash,
+        uint256 _ageHash,
+        uint256 _countryHash,
+        uint256 _regionHash
     ) public onlyOwner {
         Passport memory passport = Passport({
             fullNameHash: _fullNameHash,
             numberHash: _numberHash,
             genderHash: _genderHash,
-            birthDateHash: _birthDateHash,
-            birthPlaceHash: _birthPlaceHash,
-            otherAttributesHash: _otherAttributesHash
+            birthTimestampHash: _birthTimestampHash,
+            birthPlaceHash: _birthPlaceHash
         });
 
         userDocuments[user] = UserDocuments({
@@ -55,13 +59,28 @@ contract zkKYC is Soulbound {
             passport: passport,
             ageHash: _ageHash,
             countryHash: _countryHash,
-            regionHash: _regionHash
+            regionHash: _regionHash,
+            isExist: true
         });
+
+        // mint SBT-1155
+        mint(user, 0, 1);
+    }
+
+    function createCommitment(bytes32 _commitment) external {
+        require(isExist(msg.sender), "NONREGISTRY");
+        uint32 insertedIndex = _insert(_commitment);
+
+        emit CreateCommitment(_commitment, insertedIndex);
     }
 
     function getDocuments(
         address user
     ) public view returns (UserDocuments memory) {
         return userDocuments[user];
+    }
+
+    function isExist(address user) public view returns (bool) {
+        return userDocuments[user].isExist;
     }
 }

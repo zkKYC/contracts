@@ -2,9 +2,9 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import hre from "hardhat";
 import { groth16, zKey } from "snarkjs";
+import { BigNumberish } from "ethers";
 
 import { MiMCSponge } from "../helpers/MiMCSponge";
-import { abi, bytecode } from "../helpers/Hasher.json";
 
 import input from "../circuits/age/input.json";
 import input1 from "../circuits/age/input1.json";
@@ -18,22 +18,14 @@ describe("age proof", function () {
     const mimcSponge = new MiMCSponge();
     await mimcSponge.init();
 
-    const Hahser = await hre.ethers.getContractFactory(abi, bytecode);
-    const hasher = await Hahser.deploy();
+    const AgeVerifier = await hre.ethers.getContractFactory("AgeVerifier");
+    const ageVerifier = await AgeVerifier.deploy();
 
-    const MerkleTreeWithHistory = await hre.ethers.getContractFactory(
-      "MerkleTreeWithHistoryMock"
-    );
-    const merkleTreeWithHistory = await MerkleTreeWithHistory.deploy(
-      levels,
-      hasher.target
-    );
-
-    return { hasher, merkleTreeWithHistory, mimcSponge };
+    return { ageVerifier, mimcSponge };
   }
 
   it("check proof", async () => {
-    const { mimcSponge } = await loadFixture(deploy);
+    const { ageVerifier, mimcSponge } = await loadFixture(deploy);
 
     mimcSponge.multiHash([1263330000, 1]);
     mimcSponge.multiHash([979333200, 1]);
@@ -45,7 +37,26 @@ describe("age proof", function () {
     );
 
     const vkey = await zKey.exportVerificationKey(zkeyPath);
-    const checkProof = await groth16.verify(vkey, publicSignals, proof);
-    expect(checkProof).to.be.true;
+    const localCheckProof = await groth16.verify(vkey, publicSignals, proof);
+
+    const contractCheckProof = await ageVerifier.verifyProof(
+      [proof.pi_a[0], proof.pi_a[1]],
+      [
+        [proof.pi_b[0][1], proof.pi_b[0][0]],
+        [proof.pi_b[1][1], proof.pi_b[1][0]],
+      ],
+      [proof.pi_c[0], proof.pi_c[1]],
+      [
+        // publicSignals
+        BigInt(publicSignals[0]),
+        BigInt(publicSignals[1]),
+        BigInt(publicSignals[2]),
+        BigInt(publicSignals[3]),
+      ]
+    );
+
+    // Verification checks
+    expect(localCheckProof).to.be.true;
+    expect(contractCheckProof).to.be.true;
   });
 });
