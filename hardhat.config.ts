@@ -1,6 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 require("dotenv").config();
+require("hardhat-abi-exporter");
 
 const privateKey =
   process.env.PRIVATE_KEY !== undefined
@@ -31,11 +32,11 @@ const config: HardhatUserConfig = {
       accounts: [`0x${privateKey}`],
     },
   },
-  // etherscan: {
-  //   apiKey: {
-  //     sepolia: polygonScanKey,
-  //   },
-  // },
+  etherscan: {
+    apiKey: {
+      sepolia: polygonScanKey,
+    },
+  },
 };
 
 export default config;
