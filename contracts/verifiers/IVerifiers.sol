@@ -16,7 +16,7 @@ interface ICommitmentVerifier {
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
         uint[1] calldata _pubSignals
-    ) public view returns (bool);
+    ) external view returns (bool);
 }
 
 interface IHashEqualityVerifier {
@@ -25,7 +25,7 @@ interface IHashEqualityVerifier {
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
         uint[4] calldata _pubSignals
-    ) public view returns (bool);
+    ) external view returns (bool);
 }
 
 interface IBlindHashEqualityVerifier {
@@ -34,5 +34,5 @@ interface IBlindHashEqualityVerifier {
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
         uint[3] calldata _pubSignals
-    ) public view returns (bool);
+    ) external view returns (bool);
 }

@@ -2,9 +2,13 @@
 pragma solidity ^0.8.24;
 
 import {MerkleTreeWithHistory, IHasher} from "./MerkleTreeWithHistory.sol";
+import {SiberiumNameService} from "./SiberiumNameService.sol";
 import {Soulbound} from "./sbt/SBT.sol";
 
-contract zkKYC is Soulbound, MerkleTreeWithHistory {
+contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
+    uint256 public registrationFeePerYear = 0.1 ether;
+    uint256 public removeNameFee = 0.05 ether;
+
     struct Passport {
         uint256 fullNameHash; // no proof
         uint256 numberHash;
@@ -85,5 +89,55 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory {
 
     function isExist(address user) public view returns (bool) {
         return userDocuments[user].isExist;
+    }
+
+    function registerName(
+        string calldata _name,
+        uint256 _period
+    ) external payable {
+        require(
+            msg.value >= registrationFeePerYear * _period,
+            "Insufficient payment"
+        );
+        require(
+            balanceOf[msg.sender][1] == 0,
+            "Your address already has a domain"
+        );
+        bytes32 nameHash = keccak256(abi.encodePacked(_name));
+        _registerName(nameHash, msg.sender, _period);
+        mint(msg.sender, 1, uint(nameHash));
+        names[msg.sender] = _name;
+    }
+
+    function renewName(
+        string calldata _name,
+        uint256 _period
+    ) external payable {
+        require(
+            msg.value >= registrationFeePerYear * _period,
+            "Insufficient payment"
+        );
+        bytes32 nameHash = keccak256(abi.encodePacked(_name));
+        _renewName(nameHash, msg.sender, _period);
+    }
+
+    function removeName(string calldata _name) external {
+        bytes32 nameHash = keccak256(abi.encodePacked(_name));
+        address nameOwner = records[nameHash].addr;
+        _removeName(nameHash);
+        _burn(nameOwner, 1, uint(nameHash));
+        payable(msg.sender).transfer(0.01 ether);
+    }
+
+    function setRegistrationFeePerYear(uint256 newFee) public onlyOwner {
+        registrationFeePerYear = newFee;
+    }
+
+    function setRemoveNameFee(uint256 newFee) public onlyOwner {
+        removeNameFee = newFee;
+    }
+
+    function withdraw() public onlyOwner {
+        payable(owner).transfer(address(this).balance);
     }
 }
