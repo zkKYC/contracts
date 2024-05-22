@@ -24,6 +24,7 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory {
 
     mapping(address => UserDocuments) private userDocuments;
     mapping(address => uint256) private userNonces;
+    mapping(bytes32 => bool) public commitments;
 
     uint256 public globalNonce;
 
@@ -68,8 +69,10 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory {
     }
 
     function createCommitment(bytes32 _commitment) external {
-        require(isExist(msg.sender), "NONREGISTRY");
+        require(!commitments[_commitment], "The commitment has been submitted");
+        //  require(isExist(msg.sender), "NONREGISTRY");
         uint32 insertedIndex = _insert(_commitment);
+        commitments[_commitment] = true;
 
         emit CreateCommitment(_commitment, insertedIndex);
     }

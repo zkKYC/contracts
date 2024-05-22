@@ -2,14 +2,11 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import hre from "hardhat";
 import { groth16, zKey } from "snarkjs";
-import { BigNumberish } from "ethers";
 
 import { MiMCSponge } from "../helpers/MiMCSponge";
 
-import input from "../circuits/age/input.json";
 import input1 from "../circuits/age/input1.json";
 
-const levels = 20;
 const wasmPath = "./circuits/age/age_js/age.wasm";
 const zkeyPath = "./circuits/age/age_0001.zkey";
 
