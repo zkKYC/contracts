@@ -9,8 +9,16 @@ abstract contract SiberiumNameService {
         uint256 expires;
     }
 
+    struct Offer {
+        uint256 price;
+        address owner;
+    }
+
     mapping(bytes32 => Record) public records;
     mapping(address => string) public names;
+    mapping(uint256 => Offer) public offers;
+
+    uint256 offersIDs;
 
     event NameRegistered(
         bytes32 indexed nameHash,
@@ -18,6 +26,8 @@ abstract contract SiberiumNameService {
         uint256 expires
     );
     event NameRenewed(bytes32 indexed nameHash, uint256 newExpiry);
+    event SellOffer(bytes32 indexed nameHash, uint256 price, string name);
+    event BuyOffer(bytes32 indexed nameHash);
 
     modifier isActive(bytes32 nameHash) {
         require(

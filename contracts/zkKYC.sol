@@ -9,24 +9,16 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
     uint256 public registrationFeePerYear = 0.1 ether;
     uint256 public removeNameFee = 0.05 ether;
 
-    struct Passport {
+    struct Pass {
         uint256 fullNameHash; // no proof
-        uint256 numberHash;
-        uint256 genderHash;
         uint256 birthTimestampHash;
-        uint256 birthPlaceHash;
-    }
-
-    struct UserDocuments {
-        uint256 ssnHash;
-        Passport passport;
-        uint256 ageHash;
         uint256 countryHash;
         uint256 regionHash;
+        uint256 numberHash;
         bool isExist;
     }
 
-    mapping(address => UserDocuments) private userDocuments;
+    mapping(address => Pass) private userPass;
     mapping(address => uint256) private userNonces;
     mapping(bytes32 => bool) public commitments;
 
@@ -39,32 +31,20 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
         IHasher _hasher
     ) Soulbound("zkPass", "ZKP") MerkleTreeWithHistory(_levels, _hasher) {}
 
-    function setDocuments(
+    function setPass(
         address user,
         uint256 _fullNameHash,
-        uint256 _numberHash,
-        uint256 _genderHash,
         uint256 _birthTimestampHash,
-        uint256 _birthPlaceHash,
-        uint256 _ssnHash,
-        uint256 _ageHash,
         uint256 _countryHash,
-        uint256 _regionHash
+        uint256 _regionHash,
+        uint256 _numberHash
     ) public onlyOwner {
-        Passport memory passport = Passport({
+        userPass[user] = Pass({
             fullNameHash: _fullNameHash,
-            numberHash: _numberHash,
-            genderHash: _genderHash,
             birthTimestampHash: _birthTimestampHash,
-            birthPlaceHash: _birthPlaceHash
-        });
-
-        userDocuments[user] = UserDocuments({
-            ssnHash: _ssnHash,
-            passport: passport,
-            ageHash: _ageHash,
             countryHash: _countryHash,
             regionHash: _regionHash,
+            numberHash: _numberHash,
             isExist: true
         });
 
@@ -81,14 +61,12 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
         emit CreateCommitment(_commitment, insertedIndex);
     }
 
-    function getDocuments(
-        address user
-    ) public view returns (UserDocuments memory) {
-        return userDocuments[user];
+    function getDocuments(address user) public view returns (Pass memory) {
+        return userPass[user];
     }
 
     function isExist(address user) public view returns (bool) {
-        return userDocuments[user].isExist;
+        return userPass[user].isExist;
     }
 
     function registerName(
@@ -105,7 +83,7 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
         );
         bytes32 nameHash = keccak256(abi.encodePacked(_name));
         _registerName(nameHash, msg.sender, _period);
-        mint(msg.sender, 1, uint(nameHash));
+        _mint(msg.sender, 1, uint(nameHash), "");
         names[msg.sender] = _name;
     }
 
@@ -127,6 +105,29 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
         _removeName(nameHash);
         _burn(nameOwner, 1, uint(nameHash));
         payable(msg.sender).transfer(0.01 ether);
+    }
+
+    function buyName(uint256 _offerID) external payable {
+        require(
+            balanceOf[msg.sender][1] == 0,
+            "Your address already has a domain"
+        );
+        Offer memory offer = offers[_offerID];
+        require(offer.price <= msg.value);
+        payable(offer.owner).transfer(msg.value);
+
+        _burn(offer.owner, 1, balanceOf[offer.owner][1]);
+
+        bytes32 nameHash = keccak256(abi.encodePacked(names[offer.owner]));
+        _mint(msg.sender, 1, uint(nameHash), "");
+        records[nameHash].addr = msg.sender;
+        emit BuyOffer(nameHash);
+    }
+
+    function sellName(uint256 _price) external {
+        offers[offersIDs] = Offer({price: _price, owner: msg.sender});
+        bytes32 nameHash = keccak256(abi.encodePacked(names[msg.sender]));
+        emit SellOffer(nameHash, _price, names[msg.sender]);
     }
 
     function setRegistrationFeePerYear(uint256 newFee) public onlyOwner {
