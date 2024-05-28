@@ -9,16 +9,7 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
     uint256 public registrationFeePerYear = 0.1 ether;
     uint256 public removeNameFee = 0.05 ether;
 
-    struct Pass {
-        uint256 fullNameHash; // no proof
-        uint256 birthTimestampHash;
-        uint256 countryHash;
-        uint256 regionHash;
-        uint256 numberHash;
-        bool isExist;
-    }
-
-    mapping(address => Pass) private userPass;
+    mapping(address => bytes32) private userPass;
     mapping(address => uint256) private userNonces;
     mapping(bytes32 => bool) public commitments;
 
@@ -31,42 +22,23 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
         IHasher _hasher
     ) Soulbound("zkPass", "ZKP") MerkleTreeWithHistory(_levels, _hasher) {}
 
-    function setPass(
-        address user,
-        uint256 _fullNameHash,
-        uint256 _birthTimestampHash,
-        uint256 _countryHash,
-        uint256 _regionHash,
-        uint256 _numberHash
-    ) public onlyOwner {
-        userPass[user] = Pass({
-            fullNameHash: _fullNameHash,
-            birthTimestampHash: _birthTimestampHash,
-            countryHash: _countryHash,
-            regionHash: _regionHash,
-            numberHash: _numberHash,
-            isExist: true
-        });
-
+    function setPass(address user, bytes32 _hashKYC) public onlyOwner {
+        userPass[user] = _hashKYC;
         // mint SBT-1155
         mint(user, 0, 1);
     }
 
     function createCommitment(bytes32 _commitment) external {
         require(!commitments[_commitment], "The commitment has been submitted");
-        //  require(isExist(msg.sender), "NONREGISTRY");
+        // require(userPass[msg.sender] != bytes32(0x00), "NONREGISTRY");
         uint32 insertedIndex = _insert(_commitment);
         commitments[_commitment] = true;
 
         emit CreateCommitment(_commitment, insertedIndex);
     }
 
-    function getDocuments(address user) public view returns (Pass memory) {
+    function getHashKYC(address user) public view returns (bytes32) {
         return userPass[user];
-    }
-
-    function isExist(address user) public view returns (bool) {
-        return userPass[user].isExist;
     }
 
     function registerName(

@@ -1,7 +1,7 @@
 pragma circom 2.1.8;
 
 include "../../node_modules/circomlib/circuits/mimcsponge.circom";
-include "merkleTree.circom";
+include "../helpers/merkleTree.circom";
 
 template CommitmentHasher() {
     signal input addr;

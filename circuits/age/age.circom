@@ -1,21 +1,22 @@
 pragma circom 2.1.8;
 
 include "../../node_modules/circomlib/circuits/comparators.circom";
-include "../helpers/mimc.circom";
+include "../helpers/hasher.circom";
+include "../helpers/merkleTree.circom";
 
-template age(n) {
+template Age(n, levels) {  
     signal input birthdayTimestamp;
+    signal input root;
+    signal input pathElements[levels];
+    signal input pathIndices[levels];
+
     signal input nowTimestamp;
-    signal input secret;
-    signal input hashBirthdayTimestamp;
-    signal input nonce;
 
     signal output out;
-    signal output squaredNonce;
-
-    // You can add a bitness check so that no underflow occurs during subtraction 
 
     signal adult <== 568036800;
+
+    // possible vulnerability - fix later
     signal difference <== nowTimestamp - birthdayTimestamp;
 
     // 1. If in[0] < in[1]
@@ -25,15 +26,20 @@ template age(n) {
     lessThan.in[1] <== difference;
 
     // Checking that the difference is greater than adult
-    assert(lessThan.out == 1);
+    lessThan.out === 1;
 
-    component hasher = mimc();
+    component hasher = Hasher();
     hasher.val <== birthdayTimestamp;
-    hasher.secret <== secret;
-    hasher.hashedVal <== hashBirthdayTimestamp;
 
-    squaredNonce <== nonce * nonce;
+    component tree = MerkleTreeChecker(levels);
+    tree.leaf <== hasher.hashedValue; 
+    tree.root <== root;
+    for (var i = 0; i < levels; i++) {
+        tree.pathElements[i] <== pathElements[i];
+        tree.pathIndices[i] <== pathIndices[i];
+    }
+
     out <== lessThan.out;
-}
+} 
 
-component main {public [nowTimestamp, hashBirthdayTimestamp]} = age(48);
+component main {public [nowTimestamp, root]} = Age(48, 3);
