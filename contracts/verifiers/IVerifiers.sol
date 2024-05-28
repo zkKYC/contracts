@@ -9,3 +9,21 @@ interface ICommitmentVerifier {
         uint[1] calldata _pubSignals
     ) external view returns (bool);
 }
+
+interface IAgeVerifier {
+    function verifyProof(
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[3] calldata _pubSignals
+    ) external view returns (bool);
+}
+
+interface IAttributeTreeVerifier {
+    function verifyProof(
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[2] calldata _pubSignals
+    ) external view returns (bool);
+}
