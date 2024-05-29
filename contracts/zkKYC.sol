@@ -22,10 +22,10 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
         IHasher _hasher
     ) Soulbound("zkPass", "ZKP") MerkleTreeWithHistory(_levels, _hasher) {}
 
-    function setPass(address user, bytes32 _hashKYC) public onlyOwner {
+    function setPass(address user, bytes32 _hashKYC) public /*onlyOwner*/ {
         userPass[user] = _hashKYC;
         // mint SBT-1155
-        mint(user, 0, 1);
+        mint(user, 0, uint256(_hashKYC));
     }
 
     function createCommitment(bytes32 _commitment) external {
@@ -45,10 +45,10 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
         string calldata _name,
         uint256 _period
     ) external payable {
-        require(
-            msg.value >= registrationFeePerYear * _period,
-            "Insufficient payment"
-        );
+        // require(
+        //     msg.value >= registrationFeePerYear * _period,
+        //     "Insufficient payment"
+        // );
         require(
             balanceOf[msg.sender][1] == 0,
             "Your address already has a domain"
