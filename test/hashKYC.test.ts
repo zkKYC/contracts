@@ -32,11 +32,9 @@ describe("hashKYC", function () {
     const birthday = 979333200;
     const pass = "1234567890";
     const snils = "33333333322";
-    const name = hre.ethers.keccak256(hre.ethers.toUtf8Bytes("name"));
-    const lastname = hre.ethers.keccak256(hre.ethers.toUtf8Bytes("lastname"));
-    const patronymic = hre.ethers.keccak256(
-      hre.ethers.toUtf8Bytes("patronymic")
-    );
+    const name = hre.ethers.encodeBytes32String("name");
+    const lastname = hre.ethers.encodeBytes32String("lastname");
+    const patronymic = hre.ethers.encodeBytes32String("patronymic");
     const sex = 0;
 
     const countryHash = mimcSponge.multiHash([country]);

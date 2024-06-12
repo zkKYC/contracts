@@ -34,22 +34,9 @@ abstract contract Soulbound is ERC1155, Owned {
         address to,
         uint256 tokenId,
         uint256 amount
-    ) public onlyOwner {
+    ) public /*onlyOwner*/ {
         require(amount > 0, "ZERO_AMOUNT");
         _mint(to, tokenId, amount, "");
-    }
-
-    /// @notice Mints batches of tokens to a single recipient.
-    /// @dev Only the owner can execute batch minting.
-    /// @param to The address of the recipient receiving the tokens.
-    /// @param tokenIds An array of token IDs to be minted.
-    /// @param amounts An array of amounts for each token ID being minted.
-    function batchMint(
-        address to,
-        uint256[] memory tokenIds,
-        uint256[] memory amounts
-    ) external onlyOwner {
-        _batchMint(to, tokenIds, amounts, "");
     }
 
     /// @notice Sets or updates the metadata URI for a specific token ID.
@@ -60,7 +47,7 @@ abstract contract Soulbound is ERC1155, Owned {
     function setURI(
         uint256 tokenId,
         string memory tokenURI
-    ) external onlyOwner {
+    ) external /*onlyOwner*/ {
         _setURI(tokenId, tokenURI);
     }
 
@@ -73,20 +60,7 @@ abstract contract Soulbound is ERC1155, Owned {
         address from,
         uint256 tokenId,
         uint256 amount
-    ) external onlyOwner {
+    ) external /*onlyOwner*/ {
         _burn(from, tokenId, amount);
-    }
-
-    /// @notice Burns multiple tokens with varying amounts from a given address.
-    /// @dev Only the owner of the contract can call this function.
-    /// @param from The address from which tokens will be burned.
-    /// @param tokenIds An array of token IDs to burn.
-    /// @param amounts An array of amounts corresponding to each token ID to be burned.
-    function batchBurn(
-        address from,
-        uint256[] memory tokenIds,
-        uint256[] memory amounts
-    ) external onlyOwner {
-        _batchBurn(from, tokenIds, amounts);
     }
 }
