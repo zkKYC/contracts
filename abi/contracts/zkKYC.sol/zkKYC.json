@@ -341,9 +341,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bytes32",
         "name": "_offerID",
-        "type": "uint256"
+        "type": "bytes32"
       }
     ],
     "name": "buyName",

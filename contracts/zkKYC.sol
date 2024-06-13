@@ -79,12 +79,12 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
         payable(msg.sender).transfer(0.01 ether);
     }
 
-    function buyName(uint256 _offerID) external payable {
+    function buyName(bytes32 _offerID) external payable {
         require(
             balanceOf[msg.sender][1] == 0,
             "Your address already has a domain"
         );
-        Offer memory offer = offers[_offerID];
+        Offer memory offer = offers[uint(_offerID)];
         require(offer.price <= msg.value);
         payable(offer.owner).transfer(msg.value);
 
@@ -93,12 +93,13 @@ contract zkKYC is Soulbound, MerkleTreeWithHistory, SiberiumNameService {
         bytes32 nameHash = keccak256(abi.encodePacked(names[offer.owner]));
         _mint(msg.sender, 1, uint(nameHash), "");
         records[nameHash].addr = msg.sender;
+        delete offers[uint(_offerID)];
         emit BuyOffer(nameHash);
     }
 
     function sellName(uint256 _price) external {
-        offers[offersIDs] = Offer({price: _price, owner: msg.sender});
         bytes32 nameHash = keccak256(abi.encodePacked(names[msg.sender]));
+        offers[uint256(nameHash)] = Offer({price: _price, owner: msg.sender});
         emit SellOffer(nameHash, _price, names[msg.sender]);
     }
 
