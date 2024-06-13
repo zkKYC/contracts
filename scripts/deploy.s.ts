@@ -9,15 +9,18 @@ async function main() {
   const mimcSponge = new MiMC();
   await mimcSponge.init();
 
-  const Hahser = await hre.ethers.getContractFactory(abi, bytecode);
-  const hasher = await Hahser.deploy();
+  // const Hahser = await hre.ethers.getContractFactory(abi, bytecode);
+  // const hasher = await Hahser.deploy();
 
-  console.log(`hasher deployed to ${hasher.target}`);
+  // console.log(`hasher deployed to ${hasher.target}`);
 
   const ZkKYC = (await hre.ethers.getContractFactory(
     "zkKYC"
   )) as ZkKYC__factory;
-  const zkKYC = await ZkKYC.deploy(20, hasher.target);
+  const zkKYC = await ZkKYC.deploy(
+    20,
+    "0xFe7b4867629289f646843Ce13a7edb01C51b8CAB"
+  );
 
   console.log(`zkKYC deployed to ${zkKYC.target}`);
 

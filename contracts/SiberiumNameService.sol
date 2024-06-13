@@ -65,7 +65,7 @@ abstract contract SiberiumNameService {
         emit NameRenewed(_nameHash, records[_nameHash].expires);
     }
 
-    function getAddress(string memory name) public view returns (address) {
+    function nameToAddress(string memory name) public view returns (address) {
         bytes32 nameHash = keccak256(abi.encodePacked(name));
         return _getAddress(nameHash);
     }

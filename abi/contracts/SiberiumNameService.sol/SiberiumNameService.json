@@ -89,7 +89,7 @@
         "type": "string"
       }
     ],
-    "name": "getAddress",
+    "name": "nameToAddress",
     "outputs": [
       {
         "internalType": "address",
